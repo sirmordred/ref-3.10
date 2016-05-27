@@ -1,8 +1,7 @@
 /*
- * livepatch.h - x86-specific Kernel Live Patching Core
+ * livepatch.h - arm64-specific Kernel Live Patching Core
  *
- * Copyright (C) 2014 Seth Jennings <sjenning@redhat.com>
- * Copyright (C) 2014 SUSE
+ * Copyright (C) 2014 Li Bin <huawei.libin@huawei.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,10 +17,9 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _ASM_X86_LIVEPATCH_H
-#define _ASM_X86_LIVEPATCH_H
+#ifndef _ASM_ARM64_LIVEPATCH_H
+#define _ASM_ARM64_LIVEPATCH_H
 
-#include <asm/setup.h>
 #include <linux/module.h>
 #include <linux/ftrace.h>
 
@@ -33,21 +31,21 @@ static inline int klp_check_compiler_support(void)
 #endif
 	return 0;
 }
-int klp_write_module_reloc(struct module *mod, unsigned long type,
-			   unsigned long loc, unsigned long value);
+extern int klp_write_module_reloc(struct module *mod, unsigned long type,
+				  unsigned long loc, unsigned long value);
 
-static inline void klp_arch_set_pc(struct pt_regs *regs, unsigned long ip)
+static inline void klp_arch_set_pc(struct pt_regs *regs, unsigned long pc)
 {
-	regs->ip = ip;
+	regs->pc = pc;
 }
 
 static inline unsigned long klp_arch_stub_ip(unsigned long addr)
 {
-	return addr;
+	return (addr + AARCH64_INSN_SIZE);
 }
 
 #else
 #error Live patching support is disabled; check CONFIG_LIVEPATCH
 #endif
 
-#endif /* _ASM_X86_LIVEPATCH_H */
+#endif /* _ASM_ARM64_LIVEPATCH_H */

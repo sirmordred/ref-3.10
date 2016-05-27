@@ -1,8 +1,7 @@
 /*
- * livepatch.h - x86-specific Kernel Live Patching Core
+ * livepatch.c - arm64-specific Kernel Live Patching Core
  *
- * Copyright (C) 2014 Seth Jennings <sjenning@redhat.com>
- * Copyright (C) 2014 SUSE
+ * Copyright (C) 2014 Li Bin <huawei.libin@huawei.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -18,36 +17,23 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _ASM_X86_LIVEPATCH_H
-#define _ASM_X86_LIVEPATCH_H
-
-#include <asm/setup.h>
 #include <linux/module.h>
-#include <linux/ftrace.h>
+#include <linux/uaccess.h>
+#include <asm/livepatch.h>
 
-#ifdef CONFIG_LIVEPATCH
-static inline int klp_check_compiler_support(void)
-{
-#ifndef CC_USING_FENTRY
-	return 1;
-#endif
-	return 0;
-}
+/**
+ * klp_write_module_reloc() - write a relocation in a module
+ * @mod:	module in which the section to be modified is found
+ * @type:	ELF relocation type (see asm/elf.h)
+ * @loc:	address that the relocation should be written to
+ * @value:	relocation value (sym address + addend)
+ *
+ * This function writes a relocation to the specified location for
+ * a particular module.
+ */
 int klp_write_module_reloc(struct module *mod, unsigned long type,
-			   unsigned long loc, unsigned long value);
-
-static inline void klp_arch_set_pc(struct pt_regs *regs, unsigned long ip)
+			   unsigned long loc, unsigned long value)
 {
-	regs->ip = ip;
+	/* Perform the static relocation. */
+	return static_relocate(mod, type, (void *)loc, value);
 }
-
-static inline unsigned long klp_arch_stub_ip(unsigned long addr)
-{
-	return addr;
-}
-
-#else
-#error Live patching support is disabled; check CONFIG_LIVEPATCH
-#endif
-
-#endif /* _ASM_X86_LIVEPATCH_H */
